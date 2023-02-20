@@ -15,13 +15,13 @@
     </div>
 
     <div class="box">
-        
-            <%for(var i = 0; i < newListItems.length; i++){%>
+
+            <% newListItems.forEach(function(el){ %>
                 <div class="item">
                     <input type="checkbox">
-                    <p><%=newListItems[i]%></p>
+                    <p><%= el.task %></p>
                 </div>
-            <%}%>
+            <% }) %>
           
             <form class="item" action="/" method="post">
                 <input type="text" name="newTask" placeholder="New Task" autocomplete="off">
