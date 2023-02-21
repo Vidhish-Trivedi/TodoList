@@ -1,6 +1,6 @@
 html {
   background-color: #E4E9FD;
-  background-image: -webkit-linear-gradient(65deg, #082032 50%, #00A8CC 50%);
+  background-image: -webkit-linear-gradient(65deg, #15133C 50%, #141E61 50%);
   min-height: 1000px;
   font-family: 'helvetica neue';
 }
@@ -13,8 +13,9 @@ h1 {
 .box {
   max-width: 400px;
   margin: 50px auto;
-  background: white;
-  border-radius: 5px;
+  background: #00A8CC;
+  border-radius: 20px;
+  border: 2px solid gold;
   box-shadow: 5px 5px 15px -5px rgba(0, 0, 0, 0.3);
 }
 
@@ -48,7 +49,7 @@ p {
   margin: 0;
   padding: 20px;
   font-size: 20px;
-  font-weight: 200;
+  font-weight: 300;
   color: #00204a;
 }
 
@@ -63,7 +64,7 @@ button {
   border-radius: 50%;
   border-color: transparent;
   background-color: #082032;
-  color: #fff;
+  color: #FFF;
   font-size: 30px;
   border-width: 0;
 }
@@ -73,9 +74,10 @@ input[type="text"] {
   height: 60px;
   top: 10px;
   border: none;
+  color: #FFF;
   background: transparent;
   font-size: 20px;
-  font-weight: 200;
+  font-weight: 300;
   width: 313px;
 }
 

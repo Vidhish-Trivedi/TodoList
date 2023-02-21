@@ -48,7 +48,6 @@ const List = new mongoose.model("List", listsSchema);
 // Root route.
 app.get("/", function(req, res){
     var today = new Date();
-
     var options = {weekday: "long", day: "numeric", month: "long"};
     var day = today.toLocaleDateString("en-US", options);    // Format: Saturday, January 21
 
@@ -76,11 +75,6 @@ app.get("/", function(req, res){
         }
     });
 });
-
-
-// app.get("/work", function(req, res){
-//     res.render("list", {listTitle: "Work List", newListItems: workItems});
-// });
 
 // Dynamic routic using Express.
 app.get("/:customListName", function(req, res){
@@ -123,6 +117,7 @@ app.post("/", function(req, res){
     var options = {weekday: "long", day: "numeric", month: "long"};
     var day = today.toLocaleDateString("en-US", options);    // Format: Saturday, January 21
 
+    // Set a global day variable.
     if(listName === day){
         item.save();
         res.redirect("/");
@@ -131,7 +126,8 @@ app.post("/", function(req, res){
         // Find the customList in DB and update it by adding the new item to its items array.
         List.findOne({name: listName}, function(err, foundList){
             if(err){
-                console.log(`There was an error: ${foundList}`);
+                console.log(`There was an error: ${err}`);
+
             }
             else{
                 foundList.items.push(item);
