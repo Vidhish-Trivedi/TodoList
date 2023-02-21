@@ -114,21 +114,34 @@ app.get("/:customListName", function(req, res){
 
 app.post("/", function(req, res){
    
-    // Add newly created task to DB, render on webpage.
+    // Add newly created task to DB.
     const itemName = req.body.newTask;
+    const listName = req.body.listBtn;
     const item = new Item({task: itemName});
-    item.save();
 
-    res.redirect("/");
+    var today = new Date();
+    var options = {weekday: "long", day: "numeric", month: "long"};
+    var day = today.toLocaleDateString("en-US", options);    // Format: Saturday, January 21
 
-    // if(req.body.listBtn === "Work"){
-    //     workItems.push(req.body.newTask);
-    //     res.redirect("/work");
-    // }
-    // else{
-    //     newItems.push(req.body.newTask);
-    //     res.redirect("/");
-    // }
+    if(listName === day){
+        item.save();
+        res.redirect("/");
+    }
+    else{
+        // Find the customList in DB and update it by adding the new item to its items array.
+        List.findOne({name: listName}, function(err, foundList){
+            if(err){
+                console.log(`There was an error: ${foundList}`);
+            }
+            else{
+                foundList.items.push(item);
+                foundList.save();
+                res.redirect(`/${listName}`);
+            }
+        });
+    }
+
+
 });
 
 app.post("/delete", function(req, res){
@@ -144,14 +157,6 @@ app.post("/delete", function(req, res){
             res.redirect("/");
         }
     });
-});
-
-app.post("/work", function(req, res){
-    workItems.push(req.body.newTask);
-    console.log(workItems);
-
-    // We need to pass/redirect this newItem to the get method.
-    res.redirect("/work");
 });
 
 
