@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const _ = require("lodash");
 
 const app = express();
 
@@ -78,7 +79,7 @@ app.get("/", function(req, res){
 
 // Dynamic routic using Express.
 app.get("/:customListName", function(req, res){
-    const customListName = req.params.customListName;
+    const customListName = _.capitalize(req.params.customListName);
 
     List.findOne({name: customListName}, function(err, foundList){      // foundList is an object from DB.
         if(err){
@@ -105,7 +106,7 @@ app.get("/:customListName", function(req, res){
 
 });
 
-
+// Add new tasks to lists.
 app.post("/", function(req, res){
    
     // Add newly created task to DB.
@@ -117,7 +118,6 @@ app.post("/", function(req, res){
     var options = {weekday: "long", day: "numeric", month: "long"};
     var day = today.toLocaleDateString("en-US", options);    // Format: Saturday, January 21
 
-    // Set a global day variable.
     if(listName === day){
         item.save();
         res.redirect("/");
@@ -140,19 +140,46 @@ app.post("/", function(req, res){
 
 });
 
+// Delete a task from an appropriate 
 app.post("/delete", function(req, res){
-    const checked_id = req.body.id_checked;
+    const checked_id = req.body.id_checked;     // Id of the checked item.
+    const checked_listName = req.body.listName_checked;
 
-    // Remove item checked by user.
-    Item.findByIdAndRemove({_id: checked_id}, function(err){
-        if(err){
-            console.log(`There was an error: ${err}`);
-        }
-        else{
-            console.log(`Removed ${checked_id} successfully.`);
-            res.redirect("/");
-        }
-    });
+    var today = new Date();
+    var options = {weekday: "long", day: "numeric", month: "long"};
+    var day = today.toLocaleDateString("en-US", options);    // Format: Saturday, January 21
+
+    // Delete from default ("/") list.
+    if(checked_listName === day){
+        // Remove item checked by user.
+        Item.findByIdAndRemove({_id: checked_id}, function(err){
+            if(err){
+                console.log(`There was an error: ${err}`);
+            }
+            else{
+                console.log(`Removed ${checked_id} successfully.`);
+                res.redirect("/");
+            }
+        });
+    }
+
+    // Delete from customList.
+    else{
+        // Using MongoDB docs
+        List.findOneAndUpdate(
+            {name: checked_listName},               // Conditions to find on.
+            {$pull: {items: {_id: checked_id}}},    // Update query.
+            function(err, foundList){               // Callback function.
+                if(err){
+                    console.log(`There was an error: ${err}`);
+                }
+                else{
+                    console.log("Task removed successfully.");
+                    res.redirect(`/${checked_listName}`);
+                }
+            }
+            );
+    }
 });
 
 

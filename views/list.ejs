@@ -23,6 +23,7 @@
                     
                     <div class="item">
                         <input type="checkbox" name="id_checked" value="<%= el._id %>" onchange="this.form.submit()"> <!-- To submit when checkbox is toggled -->
+                        <input type="hidden" name="listName_checked" value="<%= listTitle %>">
                         <p><%= el.task %></p>
                     </div>
                 
