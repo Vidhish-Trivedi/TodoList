@@ -17,12 +17,19 @@
     <div class="box">
 
             <% newListItems.forEach(function(el){ %>
-                <div class="item">
-                    <input type="checkbox">
-                    <p><%= el.task %></p>
-                </div>
+
+                <!-- Route to delete items -->
+                <form action="/delete" method="post">
+                    
+                    <div class="item">
+                        <input type="checkbox" name="id_checked" value="<%= el._id %>" onchange="this.form.submit()"> <!-- To submit when checkbox is toggled -->
+                        <p><%= el.task %></p>
+                    </div>
+                
+                </form>
             <% }) %>
           
+            <!-- Route to add new items -->
             <form class="item" action="/" method="post">
                 <input type="text" name="newTask" placeholder="New Task" autocomplete="off">
                 <button type="submit" name="listBtn" value=<%=listTitle%> >+</button>

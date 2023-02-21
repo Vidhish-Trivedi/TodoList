@@ -79,17 +79,38 @@ app.get("/work", function(req, res){
 
 
 app.post("/", function(req, res){
-    
-    if(req.body.listBtn === "Work"){
-        workItems.push(req.body.newTask);
-        res.redirect("/work");
-    }
-    else{
-        newItems.push(req.body.newTask);
-        res.redirect("/");
-    }
+   
+    // Add newly created task to DB, render on webpage.
+    const itemName = req.body.newTask;
+    const item = new Item({task: itemName});
+    item.save();
+
+    res.redirect("/");
+
+    // if(req.body.listBtn === "Work"){
+    //     workItems.push(req.body.newTask);
+    //     res.redirect("/work");
+    // }
+    // else{
+    //     newItems.push(req.body.newTask);
+    //     res.redirect("/");
+    // }
 });
 
+app.post("/delete", function(req, res){
+    const checked_id = req.body.id_checked;
+
+    // Remove item checked by user.
+    Item.findByIdAndRemove({_id: checked_id}, function(err){
+        if(err){
+            console.log(`There was an error: ${err}`);
+        }
+        else{
+            console.log(`Removed ${checked_id} successfully.`);
+            res.redirect("/");
+        }
+    });
+});
 
 app.post("/work", function(req, res){
     workItems.push(req.body.newTask);
