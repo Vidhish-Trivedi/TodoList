@@ -12,7 +12,7 @@ app.use(express.static("public"));
 // Connect to DB.
 mongoose.connect("mongodb://127.0.0.1:27017/todolistDB", {useNewUrlParser: true, useUnifiedTopology: true});
 
-// Schema.
+// Item Schema.
 const itemsSchema = new mongoose.Schema({
     task: String
 });
@@ -34,6 +34,15 @@ const i_3 = new Item({
 });
 
 const defaultItems = [i_1, i_2, i_3];
+
+// List Schema.
+const listsSchema = new mongoose.Schema({
+    name: String,
+    items: [itemsSchema]                    // Type is array of "Item" documents.
+});
+
+// Model.
+const List = new mongoose.model("List", listsSchema);
 
 
 // Root route.
@@ -62,10 +71,6 @@ app.get("/", function(req, res){
             }
 
             console.log("Found successfully");
-            
-            // items.forEach(el => {
-            //     console.log(el);
-            // });
 
             res.render("list", {listTitle: day, newListItems: items});
         }
@@ -73,8 +78,37 @@ app.get("/", function(req, res){
 });
 
 
-app.get("/work", function(req, res){
-    res.render("list", {listTitle: "Work List", newListItems: workItems});
+// app.get("/work", function(req, res){
+//     res.render("list", {listTitle: "Work List", newListItems: workItems});
+// });
+
+// Dynamic routic using Express.
+app.get("/:customListName", function(req, res){
+    const customListName = req.params.customListName;
+
+    List.findOne({name: customListName}, function(err, foundList){      // foundList is an object from DB.
+        if(err){
+            console.log(`There was an error: ${err}`);
+        }
+
+        else{
+            if(foundList){
+                console.log("List exists...");
+                res.render("list", {listTitle: customListName, newListItems: foundList.items});
+            }
+        
+            else{
+                console.log("Creating new list...");
+                const list = new List({
+                    name: customListName,
+                    items: defaultItems
+                });
+                list.save();
+                res.redirect(`/${customListName}`);
+            }
+        }
+    });
+
 });
 
 
