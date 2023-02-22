@@ -2,65 +2,30 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const _ = require("lodash");
+const Day =  require("./date_handler");
+const my_utils = require("./mongoose_schema");
 
 const app = express();
 
-// EJS: Tell our app to use EJS.
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-// Connect to DB.
 mongoose.connect("mongodb://127.0.0.1:27017/todolistDB", {useNewUrlParser: true, useUnifiedTopology: true});
-
-// Item Schema.
-const itemsSchema = new mongoose.Schema({
-    task: String
-});
-
-// Model.
-const Item = new mongoose.model("Item", itemsSchema);
-
-// Instantiate documents.
-const i_1 = new Item({
-    task: "Welcome to your ToDoList!"
-});
-
-const i_2 = new Item({
-    task: "Click the + button to add a new task."
-});
-
-const i_3 = new Item({
-    task: "<--- Click this to delete a task."
-});
-
-const defaultItems = [i_1, i_2, i_3];
-
-// List Schema.
-const listsSchema = new mongoose.Schema({
-    name: String,
-    items: [itemsSchema]                    // Type is array of "Item" documents.
-});
-
-// Model.
-const List = new mongoose.model("List", listsSchema);
-
 
 // Root route.
 app.get("/", function(req, res){
-    var today = new Date();
-    var options = {weekday: "long", day: "numeric", month: "long"};
-    var day = today.toLocaleDateString("en-US", options);    // Format: Saturday, January 21
+    var day = Day.getDay;
 
     // Find...
-    Item.find({}, function(err, items){
+    my_utils.Item.find({}, function(err, items){
         if(err){
             console.log(`There was an error: ${err}`);
         }
 
         else{            
             if(items.length === 0){
-                Item.insertMany(defaultItems, function(err){
+                my_utils.Item.insertMany(my_utils.defaultItems, function(err){
                     if(err){
                         console.log(`There was an error: ${err}`);
                     }
@@ -81,7 +46,7 @@ app.get("/", function(req, res){
 app.get("/:customListName", function(req, res){
     const customListName = _.capitalize(req.params.customListName);
 
-    List.findOne({name: customListName}, function(err, foundList){      // foundList is an object from DB.
+    my_utils.List.findOne({name: customListName}, function(err, foundList){      // foundList is an object from DB.
         if(err){
             console.log(`There was an error: ${err}`);
         }
@@ -96,14 +61,13 @@ app.get("/:customListName", function(req, res){
                 console.log("Creating new list...");
                 const list = new List({
                     name: customListName,
-                    items: defaultItems
+                    items: my_utils.defaultItems
                 });
                 list.save();
                 res.redirect(`/${customListName}`);
             }
         }
     });
-
 });
 
 // Add new tasks to lists.
@@ -112,11 +76,9 @@ app.post("/", function(req, res){
     // Add newly created task to DB.
     const itemName = req.body.newTask;
     const listName = req.body.listBtn;
-    const item = new Item({task: itemName});
+    const item = new my_utils.Item({task: itemName});
 
-    var today = new Date();
-    var options = {weekday: "long", day: "numeric", month: "long"};
-    var day = today.toLocaleDateString("en-US", options);    // Format: Saturday, January 21
+    var day = Day.getDay;
 
     if(listName === day){
         item.save();
@@ -124,7 +86,7 @@ app.post("/", function(req, res){
     }
     else{
         // Find the customList in DB and update it by adding the new item to its items array.
-        List.findOne({name: listName}, function(err, foundList){
+        my_utils.List.findOne({name: listName}, function(err, foundList){
             if(err){
                 console.log(`There was an error: ${err}`);
 
@@ -136,23 +98,19 @@ app.post("/", function(req, res){
             }
         });
     }
-
-
 });
 
 // Delete a task from an appropriate 
 app.post("/delete", function(req, res){
-    const checked_id = req.body.id_checked;     // Id of the checked item.
+    const checked_id = req.body.id_checked;     // Id of the checked my_utils.Item
     const checked_listName = req.body.listName_checked;
 
-    var today = new Date();
-    var options = {weekday: "long", day: "numeric", month: "long"};
-    var day = today.toLocaleDateString("en-US", options);    // Format: Saturday, January 21
+    var day = Day.getDay;
 
     // Delete from default ("/") list.
     if(checked_listName === day){
         // Remove item checked by user.
-        Item.findByIdAndRemove({_id: checked_id}, function(err){
+        my_utils.Item.findByIdAndRemove({_id: checked_id}, function(err){
             if(err){
                 console.log(`There was an error: ${err}`);
             }
@@ -166,7 +124,7 @@ app.post("/delete", function(req, res){
     // Delete from customList.
     else{
         // Using MongoDB docs
-        List.findOneAndUpdate(
+        my_utils.List.findOneAndUpdate(
             {name: checked_listName},               // Conditions to find on.
             {$pull: {items: {_id: checked_id}}},    // Update query.
             function(err, foundList){               // Callback function.
