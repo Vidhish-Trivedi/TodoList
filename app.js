@@ -59,7 +59,7 @@ app.get("/:customListName", function(req, res){
         
             else{
                 console.log("Creating new list...");
-                const list = new List({
+                const list = new my_utils.List({
                     name: customListName,
                     items: my_utils.defaultItems
                 });
